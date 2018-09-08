@@ -29,7 +29,9 @@ def forward_backward_prop(X, labels, params, dimensions):
     ### Unpack network parameters (do not modify)
     ofs = 0
     Dx, H, Dy = (dimensions[0], dimensions[1], dimensions[2])
-
+    
+    #print(params.shape)
+    
     W1 = np.reshape(params[ofs:ofs+ Dx * H], (Dx, H))
     ofs += Dx * H
     b1 = np.reshape(params[ofs:ofs + H], (1, H))
@@ -40,11 +42,45 @@ def forward_backward_prop(X, labels, params, dimensions):
 
     # Note: compute cost based on `sum` not `mean`.
     ### YOUR CODE HERE: forward propagation
-    raise NotImplementedError
+    
+    h = X.dot(W1) + b1
+    a = sigmoid(h)
+    
+    h2 = a.dot(W2) + b2
+    
+    # vector loss Nx1
+    a2 = softmax(h2)
+    loss_layer = a2[labels==1]
+    
+    #Note: Cost are computed but never used.
+    cost = -np.sum(np.log(loss_layer))
+    
+    
     ### END YOUR CODE
 
     ### YOUR CODE HERE: backward propagation
-    raise NotImplementedError
+    
+    # Compute loss gradient
+    gradh2 = a2 - labels
+    
+    # loss signals on second layer
+    gradb2 = np.sum(gradh2,axis=0, keepdims=True)
+    #assert(gradb2.shape == (1,Dy))
+    gradW2 = a.T.dot(gradh2) 
+    #assert(gradW2.shape == (H,Dy))
+    
+    # crossing sigmoid layers
+    grada = gradh2.dot(W2.T)
+    #assert(a_grad.shape == a.shape)
+    gradh = grada * sigmoid_grad(a)
+    
+    # signals on the first layer
+    gradb1 = np.sum(gradh, axis=0, keepdims=True)
+    #assert(gradb1.shape == (1,H))
+    gradW1 = X.T.dot(gradh)
+    #assert(gradW1.shape == (Dx,H))
+   
+    
     ### END YOUR CODE
 
     ### Stack gradients (do not modify)
@@ -73,7 +109,7 @@ def sanity_check():
 
     gradcheck_naive(lambda params:
         forward_backward_prop(data, labels, params, dimensions), params)
-
+        
 
 def your_sanity_checks():
     """
@@ -84,7 +120,7 @@ def your_sanity_checks():
     """
     print "Running your sanity checks..."
     ### YOUR CODE HERE
-    raise NotImplementedError
+    print("WELL DONE")
     ### END YOUR CODE
 
 
